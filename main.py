@@ -6,20 +6,20 @@ configurable detail levels, multiple export formats, time range filtering,
 and rich analysis features.
 
 Usage:
-    python git-commit-history-extractor.py /path/to/repo [OPTIONS]
+    python main.py /path/to/repo [OPTIONS]
 
 Examples:
     # JSON output with default detail
-    python git-commit-history-extractor.py /path/to/repo
+    python main.py /path/to/repo
 
     # Markdown report with full detail
-    python git-commit-history-extractor.py /path/to/repo -f markdown -d full
+    python main.py /path/to/repo -f markdown -d full
 
     # CSV with date range and author filter
-    python git-commit-history-extractor.py /path/to/repo -f csv --from 2025-01-01 --to 2025-06-01 --author "John"
+    python main.py /path/to/repo -f csv --from 2025-01-01 --to 2025-06-01 --author "John"
 
     # Custom template format
-    python git-commit-history-extractor.py /path/to/repo -f custom --template "{hash_short} | {author_name} | {subject}"
+    python main.py /path/to/repo -f custom --template "{hash_short} | {author_name} | {subject}"
 """
 
 from __future__ import annotations
@@ -163,6 +163,7 @@ class CommitFilter:
     author: str | None = None
     grep: str | None = None
     no_merges: bool = False
+    first_parent: bool = False
 
     def to_git_args(self) -> list[str]:
         """Convert filter fields to git CLI arguments."""
@@ -177,6 +178,8 @@ class CommitFilter:
             args.extend(["--grep", self.grep])
         if self.no_merges:
             args.append("--no-merges")
+        if self.first_parent:
+            args.append("--first-parent")
         if self.branch:
             args.append(self.branch)
         return args
@@ -652,7 +655,8 @@ class TemplateExporter:
     """Exports commits using a user-defined template string."""
 
     def __init__(self, template: str) -> None:
-        self._template = template
+        # Interpret escape sequences (\n, \t, etc.) from shell input
+        self._template = template.encode("utf-8").decode("unicode_escape")
         self._validate_template()
 
     def _validate_template(self) -> None:
@@ -662,6 +666,7 @@ class TemplateExporter:
             "date": "", "author_date": "", "committer_name": "", "committer_date": "",
             "subject": "", "body": "", "insertions": 0, "deletions": 0,
             "files_changed_count": 0, "files_changed": "",
+            "files_changed_paths": "",
         }
         try:
             self._template.format_map(test_fields)
@@ -689,6 +694,17 @@ class TemplateExporter:
             data.setdefault("author_name", commit.author_name)
             data.setdefault("author_email", commit.author_email)
             data.setdefault("subject", commit.subject)
+            data.setdefault(
+                "files_changed_paths",
+                ", ".join(fc.path for fc in commit.files_changed),
+            )
+            data.setdefault(
+                "files_changed",
+                [
+                    {"path": fc.path, "additions": fc.additions, "deletions": fc.deletions}
+                    for fc in commit.files_changed
+                ],
+            )
             try:
                 lines.append(self._template.format_map(data))
             except (KeyError, IndexError, ValueError) as exc:
@@ -933,6 +949,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=False,
         help="Exclude merge commits",
     )
+    filter_group.add_argument(
+        "--first-parent",
+        action="store_true",
+        default=False,
+        help="Follow only first parent of merge commits (avoids duplicates)",
+    )
 
     # Extras
     extras_group = parser.add_argument_group("extra options")
@@ -1022,6 +1044,7 @@ def main(argv: list[str] | None = None) -> int:
             author=args.author,
             grep=args.grep,
             no_merges=args.no_merges,
+            first_parent=args.first_parent,
         )
 
         if verbose:

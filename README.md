@@ -67,6 +67,7 @@ main.py <repo_path> [OPTIONS]
 | `--author` | Filter by author name (substring match) | All authors |
 | `--grep` | Filter commits by message content (regex) | All commits |
 | `--no-merges` | Exclude merge commits | Include all |
+| `--first-parent` | Follow only first parent of merges (avoids duplicates) | Off |
 
 ### Extra Options
 
@@ -194,8 +195,16 @@ Uses Python's `str.format_map` syntax. Available template fields:
 | `{insertions}` | Total lines added | `42` |
 | `{deletions}` | Total lines removed | `18` |
 | `{files_changed_count}` | Number of files changed | `3` |
+| `{files_changed_paths}` | Comma-separated file paths | `src/auth.py, tests/test_auth.py` |
+| `{files_changed}` | Raw file change list (full detail) | `[{"path": "...", "additions": 5, ...}]` |
 
 ## Examples
+
+### Custom Template with branch
+
+```bash
+python main.py /path/to/repo --from 2025-01-01 --to now --branch develop --progress -v --stats --template "## {subject}\n- **Files Changed:** {files_changed}\n- **Date:** {date}\n" -f custom -o /path/to/repo/git_history_summary.md
+```
 
 ### Filter by date range and author
 
