@@ -33,19 +33,19 @@ cd Git-History-Extractor
 
 ```bash
 # Extract history from any git repository as JSON
-python git-commit-history-extractor.py /path/to/your/repo
+python main.py /path/to/your/repo
 
 # Generate a Markdown report with full detail
-python git-commit-history-extractor.py /path/to/your/repo -f markdown -d full
+python main.py /path/to/your/repo -f markdown -d full
 
 # Export to CSV with date range filtering
-python git-commit-history-extractor.py /path/to/your/repo -f csv --from 2025-01-01 --to 2025-12-31
+python main.py /path/to/your/repo -f csv --from 2025-01-01 --to 2025-12-31
 ```
 
 ## Usage
 
 ```
-git-commit-history-extractor.py <repo_path> [OPTIONS]
+main.py <repo_path> [OPTIONS]
 ```
 
 ### Output Options
@@ -145,19 +145,19 @@ Complete commit data including diff stats, commit body, and per-file changes:
 ### JSON (default)
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo -f json
+python main.py /path/to/repo -f json
 ```
 
 Structured JSON array. Pipe to `jq` for further processing:
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo | jq '.[0:5]'
+python main.py /path/to/repo | jq '.[0:5]'
 ```
 
 ### Markdown
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo -f markdown -d full -o report.md
+python main.py /path/to/repo -f markdown -d full -o report.md
 ```
 
 Generates a readable report grouped by date with collapsible file change tables (in full detail mode).
@@ -165,7 +165,7 @@ Generates a readable report grouped by date with collapsible file change tables 
 ### CSV
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo -f csv -o history.csv
+python main.py /path/to/repo -f csv -o history.csv
 ```
 
 Tabular format ready for spreadsheets. Complex fields (file lists) are serialized as semicolon-separated strings.
@@ -173,7 +173,7 @@ Tabular format ready for spreadsheets. Complex fields (file lists) are serialize
 ### Custom Template
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo -f custom \
+python main.py /path/to/repo -f custom \
   --template "{hash_short} | {author_name:<20} | {date} | {subject}"
 ```
 
@@ -200,7 +200,7 @@ Uses Python's `str.format_map` syntax. Available template fields:
 ### Filter by date range and author
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo \
+python main.py /path/to/repo \
   --from "2025-01-01" --to "2025-06-30" \
   --author "Jane" \
   -d full
@@ -209,7 +209,7 @@ python git-commit-history-extractor.py /path/to/repo \
 ### Generate a report excluding merge commits with statistics
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo \
+python main.py /path/to/repo \
   -f markdown -d full -o report.md \
   --no-merges --stats
 ```
@@ -217,35 +217,35 @@ python git-commit-history-extractor.py /path/to/repo \
 ### Search commits by message content
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo \
+python main.py /path/to/repo \
   --grep "fix.*auth" -d low
 ```
 
 ### Extract from a specific branch after fetching
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo \
+python main.py /path/to/repo \
   --fetch --branch origin/develop -f csv -o develop-history.csv
 ```
 
 ### Quick one-liner log
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo \
+python main.py /path/to/repo \
   -f custom --template "{hash_short} {date} {author_name}: {subject}"
 ```
 
 ### Statistics summary
 
 ```bash
-python git-commit-history-extractor.py /path/to/repo --stats 2>&1 >/dev/null
+python main.py /path/to/repo --stats 2>&1 >/dev/null
 ```
 
 The `--stats` flag outputs to stderr, so you can capture data and stats separately:
 
 ```bash
 # Data to file, stats to terminal
-python git-commit-history-extractor.py /path/to/repo -o data.json --stats
+python main.py /path/to/repo -o data.json --stats
 ```
 
 Sample statistics output:
