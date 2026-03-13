@@ -203,7 +203,7 @@ Uses Python's `str.format_map` syntax. Available template fields:
 ### Custom Template with branch
 
 ```bash
-python main.py /path/to/repo --from 2025-01-01 --to now --branch develop --progress -v --stats --template "## {subject}\n- **Files Changed:** {files_changed}\n- **Date:** {date}\n" -f custom -o /path/to/repo/git_history_summary.md
+python main.py /path/to/repo --from 2025-01-01 --to now --branch develop --progress -v --stats --template "## {subject}\n\n- **Files Changed:** {files_changed}\n- **Date:** {date}\n\n" -f custom -o /path/to/repo/git_history_summary.md
 ```
 
 ### Filter by date range and author
